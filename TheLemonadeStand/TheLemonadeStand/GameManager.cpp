@@ -15,6 +15,8 @@ SDL_Surface* gCompanyGamming = NULL;
 SDL_Surface* gTitleScreen = NULL;
 SDL_Surface* gStand = NULL;
 SDL_Surface* gPlayer = NULL;
+SDL_Surface* wRoad = NULL;
+SDL_Surface* eRoad = NULL;
 
 SDL_Rect source;
 SDL_Rect destination;
@@ -23,7 +25,7 @@ const int SCREEN_FPS = 60;
 const int SCREEN_TICK_PER_FRAME = 1000 / SCREEN_FPS;
 
 bool quit = false;
-int GAME_STATE = 0;
+int GAME_STATE = 2;
 
 int COMPANY_SCREEN = 0;
 int TITLE_SCREEN = 1;
@@ -31,9 +33,9 @@ int GAME_SCREEN = 2;
 
 int GAME_SCENE = 0;
 int STAND = 0;
-int ROAD_W = 1;
+int W_ROAD = 1;
 int ROAD_N = 2;
-int ROAD_E = 3;
+int E_ROAD = 3;
 int MARKET = 4;
 int FARM = 5;
 int GENERAL_STORE = 6;
@@ -213,7 +215,7 @@ void GameManager::Update()
 
 	// Part of the screen we want to draw the sprite to
 
-	destination.x = 150;
+	destination.x = 500;
 	destination.y = 400;
 	destination.w = 65;
 	destination.h = 44;
@@ -225,7 +227,7 @@ void GameManager::Update()
 	SDL_Event e;
 	while (!quit)
 	{
-
+		SDL_FillRect(screenSurface, NULL, 0xffffff);
 
 		//Start cap timer
 		capTimer.start();
@@ -244,21 +246,21 @@ void GameManager::Update()
 				switch (e.key.keysym.sym)
 				{
 				case SDLK_UP:
-					--destination.y;
+					destination.y -= 5;
 					
 					break;
 
 				case SDLK_DOWN:
-					++destination.y;
+					destination.y += 5;
 					
 					break;
 
 				case SDLK_LEFT:
-					 --destination.x;
+					 destination.x-=5;
 					break;
 
 				case SDLK_RIGHT:
-					++destination.x;
+					destination.x+=5;
 					break;
 
 				default:
@@ -386,6 +388,18 @@ bool GameManager::loadMedia()
 		printf("player.png!\n");
 		success = false;
 	}
+	wRoad = loadSurface("images/wRoad.png");
+	if (wRoad == NULL)
+	{
+		printf("wRoad.png!\n");
+		success = false;
+	}
+	eRoad = loadSurface("images/eRoad.png");
+	if (eRoad == NULL)
+	{
+		printf("eRoad.png!\n");
+		success = false;
+	}
 
 	return success;
 }
@@ -481,15 +495,86 @@ void GameManager::gameScreen()
 
 
 
-
+//printf("destination.x: %d\n", destination.x);
+printf("destination.y: %d\n", destination.y);
 
 	if (GAME_SCENE == STAND)
-	{	SDL_SetColorKey(gPlayer, SDL_TRUE, SDL_MapRGB(gPlayer->format,0xFF, 0,  0xFF));	
+	{
+		
+		SDL_SetColorKey(gStand, SDL_TRUE, SDL_MapRGB(gStand->format, 0x5F, 0x36, 0x60));
 		SDL_BlitSurface(gStand, NULL, screenSurface, NULL);
 		SDL_SetColorKey(gPlayer, SDL_TRUE, SDL_MapRGB(gPlayer->format,0xFF, 0,  0xFF));
 		SDL_BlitSurface(gPlayer, &source, screenSurface, &destination);
+
+		if (destination.y > 440)
+		{
+			
+			destination.y = 440;
+		}
+		if (destination.y == 0)
+		{
+
+			//destination.y = 440;
+		}
+		if (destination.x <= 0)
+		{
+			GAME_SCENE = W_ROAD;
+			destination.x = 600;
+		}
+		if (destination.x > 775)
+		{
+			destination.x = 50;
+			GAME_SCENE = E_ROAD;
+			
+		}
+	}
+	
+
+	if (GAME_SCENE == W_ROAD)
+	{
+		
+
+		SDL_SetColorKey(wRoad, SDL_TRUE, SDL_MapRGB(wRoad->format, 0xFF, 0, 0xFF));
+		SDL_BlitSurface(wRoad, NULL, screenSurface, NULL);
+
+		SDL_SetColorKey(gPlayer, SDL_TRUE, SDL_MapRGB(gPlayer->format, 0xFF, 0, 0xFF));
+		SDL_BlitSurface(gPlayer, &source, screenSurface, &destination);
+
+		if (destination.x <= 0)
+		{
+			//GAME_SCENE = W_ROAD;
+			destination.x = 750;
+		}
+		if (destination.x > 775)
+		{
+			destination.x = 50;
+			GAME_SCENE = STAND;
+
+		}
+	}
+	if (GAME_SCENE == E_ROAD)
+	{
+		SDL_SetColorKey(eRoad, SDL_TRUE, SDL_MapRGB(eRoad->format, 0xFF, 0, 0xFF));
+		SDL_BlitSurface(eRoad, NULL, screenSurface, NULL);
+		SDL_SetColorKey(gPlayer, SDL_TRUE, SDL_MapRGB(gPlayer->format, 0xFF, 0, 0xFF));
+		SDL_BlitSurface(gPlayer, &source, screenSurface, &destination);
+	
+
+		if (destination.x <= 0)
+		{
+			GAME_SCENE = STAND;
+			destination.x = 700;
+		}
+		if (destination.x > 775)
+		{
+			destination.x = 50;
+			//GAME_SCENE = STAND;
+
+		}
 	}
 }
+
+
 
 	
 
